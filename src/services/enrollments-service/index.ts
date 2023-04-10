@@ -5,19 +5,22 @@ import addressRepository, { CreateAddressParams } from '@/repositories/address-r
 import enrollmentRepository, { CreateEnrollmentParams } from '@/repositories/enrollment-repository';
 import { exclude } from '@/utils/prisma-utils';
 import { nonexistentError } from '@/errors/nonexistent-error';
+import { ViaCEPAddress } from '@/protocols';
 
-async function getAddressFromCEP(cep: any) {
+async function getAddressFromCEP(cep: string) {
   const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
 
   if (!result.data) throw notFoundError();
   if (result.data.erro) throw nonexistentError();
 
+  const { logradouro, complemento, bairro, localidade: cidade, uf }: ViaCEPAddress = result.data;
+
   const address = {
-    logradouro: result.data.logradouro,
-    complemento: result.data.complemento,
-    bairro: result.data.bairro,
-    cidade: result.data.localidade,
-    uf: result.data.uf,
+    logradouro,
+    complemento,
+    bairro,
+    cidade,
+    uf,
   };
 
   return address;
